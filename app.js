@@ -31,6 +31,9 @@ const main = async () => {
     'http://my-json-server.typicode.com/convictional/engineering-interview-api/products'
   );
   await sellerData.loadStoreData();
+  
+  // Routes will access seller data w/ global var ... I know it's a big no-no but didn't
+  // want to waste too much time working around it.
   global.sellerData = sellerData;
 
   // Config API routes
