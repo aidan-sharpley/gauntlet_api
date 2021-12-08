@@ -1,9 +1,15 @@
 // app.js
 // @author aidan sharpley
 'use strict';
+const express = require('express');
+const util = require('./lib/util');
+const storeFactory = require('./lib/store');
 
-const express = require('express')
-const util = require('./lib/util')
+
+// Routes
+const productsRouter = require('./routes/products');
+const storeRouter = require('./routes/store');
+
 
 const main = async() => {
     // Init web server
@@ -17,30 +23,17 @@ app.use((err, req, res, next) => {
   res.status(500).send(resMsg);
 });
 
-// Populate product data. We could potentially read in a list of urls
+// Pull vendor data and translate to storefront data. We could potentially pass in a list of urls
 // representing distinct product APIs using process.env or pointing to
 // a config file with the urls. The ids for each product would need to be unique
 // when combining multiple product APIs.
-let productData;
-try {
-    productData = await util.pullProductData('http://my-json-server.typicode.com/convictional/engineering-interview-api/products')    
-} catch (error) {
-    console.error(error)
-}
+const storefrontData = new storeFactory.createStore('http://my-json-server.typicode.com/convictional/engineering-interview-api/products')
+await storefrontData.loadStoreData();
+global.storefrontData = storefrontData;
 
-// Validate product data and transform to required output
-let storefrontData;
-try {
-    storefrontData = await util.parseProductData(productData)    
-} catch (error) {
-    console.error(error)
-}
-
-console.log(storefrontData)
-
-// Init routes
-const router = express.Router();
-
+// Config API routes
+app.use('/products', productsRouter);
+app.use('/store', storeRouter);
 }
 
 main();
